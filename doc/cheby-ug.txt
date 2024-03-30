@@ -314,6 +314,16 @@ indication. If asserted, all registers and fields with a `lock` attribute
 cannot be written to and their value remains constant or changes to a
 predefined value.
 
+`bus-attribute`:: For AXI4 Lite bus this option, if it is set to `Xilinx`, adds X_ attributes (UG994) to the ports of the bus.
+
+`bus-name`:: Default name of the AXI4 Lite is `slave`; with this option the bus can be renamed.
+
+`use-bus-name-in-ports`:: This option causes each port name be prefixed by the bus name.
+
+`bus-clock-name`:: Default name if the clock associated with the AXI4 Lite bus is `aclk`, with this option this name can be modified, bus name prefix would also apply.
+
+`bus-reset-name`:: Default name if the reset port associated with the AXI4 Lite bus clock port is `areset_n`, with this option this name can be modified, bus name prefix would also apply.
+
 === Registers
 
 A register uses one (usual case) or two (for 64-bit registers) words address.

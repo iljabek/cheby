@@ -273,10 +273,20 @@ class AXI4LiteBus(BusGen):
             rresp = RESP_OKAY
         module.stmts.append(HDLAssign(root.h_bus['rresp'], rresp))
 
-    def add_xilinx_attributes(self, bus, portname):
+    def add_xilinx_attributes(self, bus, portname, clkname, rstname):
         for name, port in bus:
-            if name in ('clk', 'brst'):
+            if name in ('brst'):
+                port.attributes['X_INTERFACE_INFO'] = "xilinx.com:signal:reset:1.0 {} {}".format(
+                    rstname, "RST")
+                port.attributes['X_INTERFACE_PARAMETER'] = "POLARITY ACTIVE_LOW"
                 continue
+
+            if name in ('clk'):
+                port.attributes['X_INTERFACE_INFO'] = "xilinx.com:signal:clock:1.0 {} {}".format(
+                    clkname, "CLK")
+                port.attributes['X_INTERFACE_PARAMETER'] = "ASSOCIATED_BUSIF {}, ASSOCIATED_RESET {}".format(portname, rstname )
+                continue
+
             port.attributes['X_INTERFACE_INFO'] = "xilinx.com:interface:aximm:1.0 {} {}".format(
                 portname, name.upper())
 
@@ -289,14 +299,15 @@ class AXI4LiteBus(BusGen):
         """Create AXI4-Lite interface for the design."""
         opts = BusOptions(root, root)
         self.expand_opts(opts)
-        bus = [('clk', HDLPort("aclk")),
-               ('brst', HDLPort("areset_n"))]
+        port_pref = root.hdl_bus_name + "_" if root.hdl_use_bus_name_in_ports else ""
+        bus = [('clk', HDLPort(port_pref + root.hdl_bus_clk_name)),
+               ('brst', HDLPort(port_pref + root.hdl_bus_rst_name))]
         bus.extend(self.gen_axi4lite_bus(
             lambda n, sz, lo=0, dir='IN':
-                (n, None if sz == 0 else HDLPort(n, size=sz,lo_idx=lo, dir=dir)),
+                (n, None if sz == 0 else HDLPort(port_pref+n, size=sz,lo_idx=lo, dir=dir)),
             opts.addr_wd, opts.addr_low, root.c_word_bits, False))
         if root.hdl_bus_attribute == 'Xilinx':
-            self.add_xilinx_attributes(bus, 'slave')
+            self.add_xilinx_attributes(bus, root.hdl_bus_name, root.hdl_bus_clk_name, root.hdl_bus_rst_name)
         add_bus(root, module, bus)
         root.h_bussplit = True
         ibus.addr_size = root.c_addr_bits
@@ -327,7 +338,7 @@ class AXI4LiteBus(BusGen):
                     size=sz, lo_idx=lo, dir=dir)),
             opts.addr_wd, opts.addr_low, root.c_word_bits, True)
         if root.hdl_bus_attribute == 'Xilinx':
-            self.add_xilinx_attributes(ports, n.c_name)
+            self.add_xilinx_attributes(ports, n.c_name, root.hdl_bus_clk_name, root.hdl_bus_rst_name)
         n.h_bus_opts = opts
         n.h_bus = {}
         for name, p in ports:

@@ -1383,6 +1383,10 @@ def gen_gena_regctrl(root, use_common_visual):
         raise LayoutException(
             root, 'bus must be cern-be-vme-xx for --gen-gena-regctrl')
     root.hdl_bus_attribute = None
+    root.hdl_bus_name = 'slave'
+    root.hdl_use_bus_name_in_ports = False
+    root.hdl_bus_rst_name = 'areset_n'
+    root.hdl_bus_clk_name = 'aclk'
     module = gen_hdl.gen_hdl_header(root)
     root.h_bus['vrst'] = root.h_bus['brst']
     module.name = 'RegCtrl_{}'.format(root.name)

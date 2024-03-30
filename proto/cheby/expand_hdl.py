@@ -224,6 +224,10 @@ def expand_x_hdl_memory(n, dct):
 def expand_x_hdl_root(n, dct):
     n.hdl_pipeline = None
     n.hdl_bus_attribute = None
+    n.hdl_use_bus_name_in_ports = False
+    n.hdl_bus_name = 'slave'
+    n.hdl_bus_rst_name = 'areset_n'
+    n.hdl_bus_clk_name = 'aclk'
     n.hdl_iogroup = None
     n.hdl_wmask = False
     n.hdl_lock_port = None
@@ -244,6 +248,14 @@ def expand_x_hdl_root(n, dct):
             else:
                 parser.error("bad value for x-hdl:bus-attribute of root {}".format(
                     n.get_path()))
+        elif k == 'bus-name':
+            n.hdl_bus_name = parser.read_text(n, k, v)
+        elif k == 'bus-reset-name':
+            n.hdl_bus_rst_name = parser.read_text(n, k, v)
+        elif k == 'bus-clock-name':
+            n.hdl_bus_clk_name = parser.read_text(n, k, v)
+        elif k == 'use-bus-name-in-ports':
+            n.hdl_use_bus_name_in_ports = parser.read_bool(n, k, v)
         elif k == 'bus-granularity':
             if v not in ('byte', 'word'):
                 parser.error("bad value for x-hdl:bus-granularity for {}".format(
